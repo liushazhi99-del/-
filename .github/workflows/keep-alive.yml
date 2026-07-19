@@ -3,25 +3,19 @@ on:
   schedule:
     # 每 3 天的中午 12:15 自动触发一次打卡
     - cron: '15 12 */3 * *'
-  workflow_dispatch: # 允许你手动点击按钮测试
+  workflow_dispatch: # 允许手动点击测试
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping System 1
+      - name: Ping System 1 (Root API)
         run: |
-          curl -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/heartbeat" \
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
           -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
-          -H "Content-Type: application/json" \
-          -H "Prefer: return=minimal" \
-          -d '{"message": "heartbeat"}'
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
 
-      - name: Ping System 2
+      - name: Ping System 2 (Root API)
         run: |
-          curl -X POST "${{ secrets.SUPABASE_URL_2 }}/rest/v1/heartbeat" \
+          curl -X GET "${{ secrets.SUPABASE_URL_2 }}/rest/v1/" \
           -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}" \
-          -H "Content-Type: application/json" \
-          -H "Prefer: return=minimal" \
-          -d '{"message": "heartbeat"}'
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
