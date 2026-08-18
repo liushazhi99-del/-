@@ -20,3 +20,29 @@ jobs:
           curl -X GET "${{ secrets.SUPABASE_URL_2 }}/rest/v1/" \
             -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
+name: Keep Alive Both Systems
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 */3 * *' # 每隔 3 天北京时间中午 12 点自动打卡
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping System 1 (涉水文学社)
+        run: |
+          URL="${{ secrets.SUPABASE_URL }}"
+          URL="${URL%/}"
+          curl -s -i -X GET "${URL}/rest/v1/ds_manuscripts?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" || true
+
+      - name: Ping System 2 (东山文苑)
+        run: |
+          URL="${{ secrets.SUPABASE_URL_2 }}"
+          URL="${URL%/}"
+          curl -s -i -X GET "${URL}/rest/v1/votes?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}" || true
