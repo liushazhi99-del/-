@@ -1,31 +1,9 @@
 name: Keep Alive Both Systems
 
 on:
-  workflow_dispatch: # 支持手动点火测试
-  schedule:
-    - cron: '0 4 */3 * *' # 每隔 3 天的北京时间中午 12点 自动帮你保活一次
-
-jobs:
-  ping:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Ping System 1 (涉水文学社)
-        run: |
-          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
-
-      - name: Ping System 2 (东山文苑)
-        run: |
-          curl -X GET "${{ secrets.SUPABASE_URL_2 }}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
-name: Keep Alive Both Systems
-
-on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 */3 * *' # 每隔 3 天北京时间中午 12 点自动打卡
+    - cron: '0 4 */3 * *'
 
 jobs:
   ping:
