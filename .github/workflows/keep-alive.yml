@@ -1,4 +1,4 @@
-name: Keep Alive Both Systems
+name: Keep Alive All Projects
 
 on:
   workflow_dispatch:
@@ -9,20 +9,47 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping System 1 (涉水文学社)
+      - name: 智能交叉匹配打卡保活
         run: |
-          URL="${{ secrets.SUPABASE_URL }}"
-          URL="${URL%/}"
-          echo "正在打卡涉水文学社..."
-          curl -g -i -f -X GET "${URL}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          URLS=(
+            "${{ secrets.SUPABASE_URL }}"
+            "${{ secrets.SUPABASE_URL_2 }}"
+          )
+          KEYS=(
+            "${{ secrets.SUPABASE_KEY }}"
+            "${{ secrets.SUPABASE_KEY_2 }}"
+          )
 
-      - name: Ping System 2 (东山文苑)
-        run: |
-          URL="${{ secrets.SUPABASE_URL_2 }}"
-          URL="${URL%/}"
-          echo "正在打卡东山文苑..."
-          curl -g -i -f -X GET "${URL}/rest/v1/" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
+          SUCCESS_COUNT=0
+
+          for url in "${URLS[@]}"; do
+            # 过滤空变量
+            [ -z "$url" ] && continue
+            clean_url="${url%/}"
+            
+            echo "===================================="
+            echo "正在探测网址: ${clean_url}"
+            
+            for key in "${KEYS[@]}"; do
+              [ -z "$key" ] && continue
+              
+              # 发送请求并获取 HTTP 状态码
+              HTTP_CODE=$(curl -g -s -o /dev/null -w "%{http_code}" -X GET "${clean_url}/rest/v1/" \
+                -H "apikey: ${key}" \
+                -H "Authorization: Bearer ${key}")
+              
+              if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 204 ]; then
+                echo "🎉 [打卡成功] 秘钥匹配正确！项目已成功保活！"
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                break # 当前网址保活成功，自动切换到下一个网址
+              fi
+            done
+          done
+
+          echo "===================================="
+          echo "巡检完成：本次共成功保活了 ${SUCCESS_COUNT} 个项目！"
+          
+          if [ "$SUCCESS_COUNT" -eq 0 ]; then
+            echo "❌ 失败：没有找到任何可用的网址与密钥组合，请检查 Secrets 是否填错。"
+            exit 1
+          fi
