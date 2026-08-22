@@ -13,14 +13,16 @@ jobs:
         run: |
           URL="${{ secrets.SUPABASE_URL }}"
           URL="${URL%/}"
-          curl -s -i -X GET "${URL}/rest/v1/ds_manuscripts?select=id&limit=1" \
+          echo "请求地址: ${URL}/rest/v1/ds_manuscripts"
+          curl -i -f -X GET "${URL}/rest/v1/ds_manuscripts?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" || true
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
 
       - name: Ping System 2 (东山文苑)
         run: |
           URL="${{ secrets.SUPABASE_URL_2 }}"
           URL="${URL%/}"
-          curl -s -i -X GET "${URL}/rest/v1/votes?select=id&limit=1" \
+          echo "请求地址: ${URL}/rest/v1/votes"
+          curl -i -f -X GET "${URL}/rest/v1/votes?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}" || true
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
