@@ -13,8 +13,8 @@ jobs:
         run: |
           URL="${{ secrets.SUPABASE_URL }}"
           URL="${URL%/}"
-          echo "请求地址: ${URL}/rest/v1/ds_manuscripts"
-          curl -i -f -X GET "${URL}/rest/v1/ds_manuscripts?select=id&limit=1" \
+          echo "正在请求涉水文学社..."
+          curl -g -i -f -X GET "${URL}/rest/v1/ds_manuscripts?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
 
@@ -22,7 +22,7 @@ jobs:
         run: |
           URL="${{ secrets.SUPABASE_URL_2 }}"
           URL="${URL%/}"
-          echo "请求地址: ${URL}/rest/v1/votes"
-          curl -i -f -X GET "${URL}/rest/v1/votes?select=id&limit=1" \
+          echo "正在请求东山文苑..."
+          curl -g -i -f -X GET "${URL}/rest/v1/votes?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
