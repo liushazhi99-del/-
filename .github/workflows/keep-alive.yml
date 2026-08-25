@@ -5,10 +5,19 @@ on:
   schedule:
     - cron: '0 4 */3 * *'
 
+# 赋予脚本向仓库提交代码的写入权限
+permissions:
+  contents: write
+
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      # 第一步：拉取仓库代码
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 第二步：交叉匹配打卡 Supabase
       - name: 智能交叉匹配打卡保活
         run: |
           URLS=(
@@ -23,7 +32,6 @@ jobs:
           SUCCESS_COUNT=0
 
           for url in "${URLS[@]}"; do
-            # 过滤空变量
             [ -z "$url" ] && continue
             clean_url="${url%/}"
             
@@ -33,7 +41,6 @@ jobs:
             for key in "${KEYS[@]}"; do
               [ -z "$key" ] && continue
               
-              # 发送请求并获取 HTTP 状态码
               HTTP_CODE=$(curl -g -s -o /dev/null -w "%{http_code}" -X GET "${clean_url}/rest/v1/" \
                 -H "apikey: ${key}" \
                 -H "Authorization: Bearer ${key}")
@@ -41,15 +48,22 @@ jobs:
               if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 204 ]; then
                 echo "🎉 [打卡成功] 秘钥匹配正确！项目已成功保活！"
                 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
-                break # 当前网址保活成功，自动切换到下一个网址
+                break
               fi
             done
           done
 
-          echo "===================================="
-          echo "巡检完成：本次共成功保活了 ${SUCCESS_COUNT} 个项目！"
-          
           if [ "$SUCCESS_COUNT" -eq 0 ]; then
-            echo "❌ 失败：没有找到任何可用的网址与密钥组合，请检查 Secrets 是否填错。"
+            echo "❌ 失败：没有找到任何可用的网址与密钥组合。"
             exit 1
           fi
+
+      # 第三步：自动提交代码，伪造仓库活跃度（防 GitHub 60天休眠）
+      - name: 刷新仓库活跃状态
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          echo "Last active: $(date -u)" > .github/keep_alive_timestamp
+          git add .github/keep_alive_timestamp
+          git commit -m "chore: auto refresh repo activity [skip ci]" || exit 0
+          git push
